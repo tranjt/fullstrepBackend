@@ -8,6 +8,8 @@ app.use(cors())
 
 app.use(express.json())
 
+app.use(express.static('build'))
+
 morgan.token('reqBody', (req) => JSON.stringify(req.body))
 
 app.use(morgan(':method :url :status :total-time[digits] - :response-time ms :reqBody'))
