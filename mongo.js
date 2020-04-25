@@ -27,12 +27,13 @@ if (name && number) {
 
 if (person) {
     person.save().then(response => {
+        console.log(response)
         console.log(`Added ${person.name} number ${person.number} to phonebook`)
         mongoose.connection.close()
     })
 } else {
     Person.find({}).then(persons => {
-        console.log("phonebook:")
+        console.log('phonebook:')
         persons.forEach(person => {
             console.log( `${person.name} ${person.number}` )
         })

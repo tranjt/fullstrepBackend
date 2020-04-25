@@ -13,20 +13,20 @@ app.use(express.static('build'))
 morgan.token('reqBody', (req) => JSON.stringify(req.body))
 app.use(morgan(':method :url :status :total-time[digits] - :response-time ms :reqBody'))
 
-app.get("/info", (request, response) => {
+app.get('/info', (request, response) => {
     Person.find({}).then(persons => {
         response.send(`<div>Phonebook has info for ${persons.length} people</div><br> 
     <div> ${new Date()} </div> `)
     })
 })
 
-app.get("/api/persons", (request, response) => {
+app.get('/api/persons', (request, response) => {
     Person.find({}).then(persons => {
         response.json(persons.map(person => person.toJSON()))
     })
 })
 
-app.get("/api/persons/:id", (request, response, next) => {
+app.get('/api/persons/:id', (request, response, next) => {
     Person.findById(request.params.id)
         .then(person => {
             if (person) {
@@ -38,28 +38,29 @@ app.get("/api/persons/:id", (request, response, next) => {
         .catch(error => next(error))
 })
 
-app.delete("/api/persons/:id", (request, response, next) => {
+app.delete('/api/persons/:id', (request, response, next) => {
     Person.findByIdAndRemove(request.params.id)
         .then(result => {
+            console.log(`Deleted ${result.name} number ${result.number} from phonebook`)
             response.status(204).end()
         })
         .catch(error => next(error))
 })
 
-app.post("/api/persons", (request, response, next) => {
+app.post('/api/persons', (request, response, next) => {
     const body = request.body
 
     if (!body) {
         return response.status(400).json({
-            error: "content missing"
+            error: 'content missing'
         })
     } else if (!body.name) {
         return response.status(400).json({
-            error: "name is missing"
+            error: 'name is missing'
         })
     } else if (!body.number) {
         return response.status(400).json({
-            error: "number is missing"
+            error: 'number is missing'
         })
     }
 
@@ -76,7 +77,7 @@ app.post("/api/persons", (request, response, next) => {
         }).catch(error => next(error))
 })
 
-app.put("/api/persons/:id", (request, response, next) => {
+app.put('/api/persons/:id', (request, response, next) => {
     const body = request.body
     const person = {
         name: body.name,
