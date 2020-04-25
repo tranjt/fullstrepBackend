@@ -16,7 +16,7 @@ app.use(morgan(':method :url :status :total-time[digits] - :response-time ms :re
 app.get("/info", (request, response) => {
     Person.find({}).then(persons => {
         response.send(`<div>Phonebook has info for ${persons.length} people</div><br> 
-    <div> ${new Date()} </div> `)        
+    <div> ${new Date()} </div> `)
     })
 })
 
@@ -46,7 +46,7 @@ app.delete("/api/persons/:id", (request, response, next) => {
         .catch(error => next(error))
 })
 
-app.post("/api/persons", (request, response) => {
+app.post("/api/persons", (request, response, next) => {
     const body = request.body
 
     if (!body) {
@@ -68,10 +68,12 @@ app.post("/api/persons", (request, response) => {
         number: body.number
     })
 
-    person.save().then(savedPerson => {
-        console.log(`Added ${person.name} number ${person.number} to phonebook`)
-        response.json(savedPerson.toJSON())
-    })
+    person.save()
+        .then(savedPerson => savedPerson.toJSON())
+        .then(savedAndFormattedPerson => {
+            console.log(`Added ${savedAndFormattedPerson.name} number ${savedAndFormattedPerson.number} to phonebook`)
+            response.json(savedAndFormattedPerson)
+        }).catch(error => next(error))
 })
 
 app.put("/api/persons/:id", (request, response, next) => {
@@ -81,10 +83,9 @@ app.put("/api/persons/:id", (request, response, next) => {
         number: body.number
     }
 
-    Person.findByIdAndUpdate(request.params.id, person, { new: true })
-        .then(updatedPerson => {
-            response.json(updatedPerson.toJSON())
-        })
+    Person.findByIdAndUpdate(request.params.id, person, { new: true, runValidators: true, context: 'query' })
+        .then(updatedPerson => updatedPerson.toJSON())
+        .then(updatedPerson => response.json(updatedPerson))
         .catch(error => next(error))
 })
 
@@ -93,7 +94,10 @@ const errorHandler = (error, request, response, next) => {
 
     if (error.name === 'CastError') {
         return response.status(400).send({ error: 'malformatted id' })
+    } else if (error.name === 'ValidationError') {
+        return response.status(400).json({ error: error.message })
     }
+
     next(error)
 }
 
@@ -103,3 +107,5 @@ const PORT = process.env.PORT
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
+
+
